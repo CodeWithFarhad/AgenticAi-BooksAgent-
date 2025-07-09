@@ -1,0 +1,39 @@
+# Node/Next.js (frontend)
+frontend/node_modules/
+frontend/.next/
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+frontend/.cache/
+frontend/yarn.lock
+frontend/package-lock.json
+
+# Python (backend)
+backend/__pycache__/
+backend/.env
+backend/.env.*
+backend/.venv/
+backend/venv/
+backend/.mypy_cache/
+backend/.pytest_cache/
+backend/.DS_Store
+
+# General
+*.pyc
+*.pyo
+*.pyd
+*.log
+.DS_Store
+.env
+.env.*
+*.sqlite3
+*.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS generated
+Thumbs.db
+ehthumbs.db
+Desktop.ini 

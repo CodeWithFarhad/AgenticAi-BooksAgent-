@@ -1,0 +1,7 @@
+fastapi
+sqlalchemy
+bcrypt
+python-dotenv
+uvicorn
+openai-agents
+httpx 

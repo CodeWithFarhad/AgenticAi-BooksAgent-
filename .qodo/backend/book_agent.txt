@@ -1,0 +1,29 @@
+# agents.py
+# Placeholder for BookAgent and runner setup 
+
+import os
+from dotenv import load_dotenv
+from openai import AsyncOpenAI
+from agents import Agent, OpenAIChatCompletionsModel, Runner, function_tool
+from .tools import search_books, get_book_details, generate_summary, recommend_books
+
+load_dotenv()
+
+gemini_api_key = os.getenv('GEMINI_API_KEY')
+
+client = AsyncOpenAI(
+    api_key=gemini_api_key,
+    base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
+)
+
+# Register all tool functions
+TOOLS = [search_books, get_book_details, generate_summary, recommend_books]
+
+agent = Agent(
+    name="BookAgent",
+    instructions="You are a helpful book recommender and summarizer...",
+    model=OpenAIChatCompletionsModel(client=client),
+    tools=TOOLS
+)
+
+runner = Runner(agent) 

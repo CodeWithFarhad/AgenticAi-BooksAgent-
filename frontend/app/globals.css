@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Inter', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background: linear-gradient(135deg, #020006, #080011, #100017, #000000);
+  background-size: 400% 400%;
+  animation: gradientMove 12s ease-in-out infinite;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+@keyframes gradientMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  background: #18181b;
+}
+::-webkit-scrollbar-thumb {
+  background: #23232b;
+  border-radius: 8px;
+}
+
+.sidebar-theme {
+  background: linear-gradient(135deg, #2d014d, #080011, #100017, #000000);
+  background-size: 400% 400%;
+  animation: sidebarGradientMove 12s ease-in-out infinite;
+  border-right: 1.5px solid #23232b;
+}
+@keyframes sidebarGradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+} 

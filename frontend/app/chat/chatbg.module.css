@@ -1,0 +1,18 @@
+.animatedBg {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #020006, #080011, #100017, #000000);
+  background-size: 400% 400%;
+  animation: gradientMove 12s ease-in-out infinite;
+}
+
+@keyframes gradientMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+} 
