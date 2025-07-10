@@ -2,6 +2,7 @@
 
 import requests
 import random
+import urllib.parse
 from agents import function_tool
 
 def get_book_info_raw(book_title: str) -> list:
@@ -48,13 +49,11 @@ def get_book_info_raw(book_title: str) -> list:
             if iden.get("type") in ["ISBN_13", "ISBN_10"]:
                 isbn = iden.get("identifier")
                 break
-        # Amazon direct link if ISBN, else fallback to search
-        if isbn:
-            amazon_link = f"https://www.amazon.com/dp/{isbn}"
-        else:
-            amazon_link = f"https://www.amazon.com/s?k={book_info.get('title', book_title).replace(' ', '+')}"
-        # Z-Library working link
-        zlib_link = f"https://singlelogin.re/search.php?req={book_info.get('title', book_title).replace(' ', '+')}"
+        # Always use search links for reliability
+        title_for_url = urllib.parse.quote_plus(book_info.get('title', book_title))
+        amazon_link = f"https://www.amazon.com/s?k={title_for_url}"
+        goodreads_link = f"https://www.goodreads.com/search?q={title_for_url}"
+        bookscape_link = f"https://www.bookscape.co/search?q={title_for_url}"
         books.append({
             "title": book_info.get("title", "N/A"),
             "author": ", ".join(book_info.get("authors", ["Unknown Author"])),
@@ -65,8 +64,8 @@ def get_book_info_raw(book_title: str) -> list:
             "isbn": isbn,
             "buy_links": [
                 amazon_link,
-                zlib_link,
-                f"https://www.goodreads.com/search?q={book_info.get('title', book_title).replace(' ', '+')}"
+                goodreads_link,
+                bookscape_link
             ]
         })
     return books
