@@ -119,15 +119,8 @@ export default function ChatPage() {
           choice: selectedChoice,
         });
       }
-    } else if (chatMode === 'summary') {
-      if (input.trim()) {
-        sendMessage(input.trim(), {
-          genres: selectedGenres,
-          mood: selectedMood,
-          choice: selectedChoice,
-        });
-      }
     }
+    // No summary auto-trigger here!
     // eslint-disable-next-line
   }, [selectedGenres, selectedMood, chatMode]);
 
