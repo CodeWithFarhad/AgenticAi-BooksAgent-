@@ -22,6 +22,7 @@ interface Book {
   rating?: number
   publishedYear?: number
   amazonLink?: string
+  buy_links?: string[]
 }
 
 function UserNav({ user }: { user: any }) {
@@ -165,9 +166,12 @@ export default function DiscoverPage() {
           const isbn10 = info.industryIdentifiers.find((id: any) => id.type === "ISBN_10");
           isbn = isbn13?.identifier || isbn10?.identifier || null;
         }
-        let amazonLink = isbn
-          ? `https://www.amazon.com/dp/${isbn}`
-          : `https://www.amazon.com/s?k=${encodeURIComponent(info.title)}`;
+        let titleForUrl = encodeURIComponent(info.title);
+        let buy_links = [
+          `https://www.amazon.com/s?k=${titleForUrl}`,
+          `https://www.goodreads.com/search?q=${titleForUrl}`,
+          `https://www.bookscape.co/search?q=${titleForUrl}`
+        ];
         return {
           id: item.id,
           title: info.title,
@@ -177,7 +181,7 @@ export default function DiscoverPage() {
           genre: (info.categories || []).join(", "),
           rating: info.averageRating,
           publishedYear: info.publishedDate,
-          amazonLink,
+          buy_links,
         }
       }) || [])
     } catch (error) {
@@ -376,7 +380,13 @@ export default function DiscoverPage() {
                       >
                         Summary
                       </Button>
-                      {rec.amazonLink && (
+                      {(rec.buy_links && rec.buy_links[0]) ? (
+                        <a href={rec.buy_links[0]} target="_blank" rel="noopener noreferrer">
+                          <Button className="bg-[#a020f0] hover:bg-[#c04cfb] text-white rounded-full px-4 py-2 text-sm font-bold mt-1">
+                            Buy
+                          </Button>
+                        </a>
+                      ) : rec.amazonLink && (
                         <a href={rec.amazonLink} target="_blank" rel="noopener noreferrer">
                           <Button className="bg-[#a020f0] hover:bg-[#c04cfb] text-white rounded-full px-4 py-2 text-sm font-bold mt-1">
                             Buy
@@ -443,7 +453,13 @@ export default function DiscoverPage() {
                     >
                       {isInHistory(book.id) ? "Added" : "Add to List"}
                     </Button>
-                    {book.amazonLink && (
+                    {(book.buy_links && book.buy_links[0]) ? (
+                      <a href={book.buy_links[0]} target="_blank" rel="noopener noreferrer">
+                        <Button className="bg-[#a020f0] hover:bg-[#c04cfb] text-white rounded-full px-4 py-2 text-sm font-bold">
+                          Buy
+                        </Button>
+                      </a>
+                    ) : book.amazonLink && (
                       <a href={book.amazonLink} target="_blank" rel="noopener noreferrer">
                         <Button className="bg-[#a020f0] hover:bg-[#c04cfb] text-white rounded-full px-4 py-2 text-sm font-bold">
                           Buy
