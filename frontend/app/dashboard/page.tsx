@@ -86,8 +86,8 @@ export default function DashboardPage() {
   const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture || null;
 
   return (
-    <div className={`flex flex-col items-center justify-center min-h-screen w-full ${styles.animatedBg}`}>
-      <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-10 max-w-3xl w-full flex flex-col md:flex-row gap-8 items-center border border-white/20">
+    <div className={`flex flex-col items-center justify-center min-h-screen w-full bg-[#181A20]`}>
+      <div className="bg-[#23263A] backdrop-blur-xl rounded-3xl shadow-2xl p-10 max-w-3xl w-full flex flex-col md:flex-row gap-8 items-center border border-white/10">
         {/* Avatar and quick info */}
         <div className="flex flex-col items-center md:items-start gap-4 w-full md:w-1/3">
           <div

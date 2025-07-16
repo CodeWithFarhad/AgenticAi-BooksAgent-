@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("rounded-2xl bg-card border border-neutral-800 shadow p-0", className)} {...props} />;
+  return <div className={cn("rounded-2xl bg-[#23263A] border border-neutral-800 shadow-lg p-0", className)} {...props} />;
 }
 
 export function CardHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
@@ -14,7 +14,7 @@ export function CardTitle({ className, ...props }: React.HTMLAttributes<HTMLDivE
 }
 
 export function CardContent({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("p-4 font-medium", className)} {...props} />;
+  return <div className={cn("p-4 font-medium text-neutral-200", className)} {...props} />;
 }
 
 // Enhanced AuthCard: Premium glassmorphism, animated border, logo slot, and modern layout
@@ -36,13 +36,13 @@ export function AuthCard({
   return (
     <div
       className={cn(
-        "relative w-full max-w-sm rounded-2xl p-[1.5px] bg-gradient-to-br from-[#a020f0] via-[#3a1c71] to-[#000] shadow-xl overflow-hidden",
+        "relative w-full max-w-sm rounded-2xl p-[1.5px] bg-gradient-to-br from-[#4F46E5] via-[#23263A] to-[#000] shadow-xl overflow-hidden",
         className
       )}
       style={{backdropFilter: 'blur(10px)'}}
     >
-      <div className="absolute inset-0 z-0 opacity-30 bg-gradient-to-br from-white/10 via-[#a020f0]/10 to-black/30 animate-pulse" />
-      <div className="relative z-10 flex flex-col items-center px-4 py-4 bg-black/80 rounded-2xl shadow-lg">
+      <div className="absolute inset-0 z-0 opacity-30 bg-gradient-to-br from-white/10 via-[#4F46E5]/10 to-black/30 animate-pulse" />
+      <div className="relative z-10 flex flex-col items-center px-4 py-4 bg-[#23263A]/90 rounded-2xl shadow-lg">
         {logo && <div className="mb-1">{logo}</div>}
         <div className="w-full text-center mb-2">
           <h2 className="text-xl font-extrabold text-white drop-shadow mb-0 font-sans tracking-tight flex items-center justify-center gap-2">

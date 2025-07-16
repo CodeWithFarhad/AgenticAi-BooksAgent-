@@ -140,129 +140,136 @@ export default function PreferencesPage() {
   }
 
   return (
-    <div className={`min-h-screen w-full flex items-center justify-center ${styles.animatedBg}`}>
-      <main className="w-full max-w-3xl px-4 py-12 flex items-center justify-center min-h-screen">
-        <Card className="rounded-3xl bg-white/5 border border-white/20 shadow-2xl w-full p-10">
-          <CardHeader className="pb-6 flex flex-row items-center gap-4">
-            <CardTitle className="text-4xl font-extrabold text-neutral-100 tracking-tight">Preferences</CardTitle>
+    <div className="min-h-screen w-full flex justify-center bg-[#101014] py-10">
+      <main className="w-full max-w-4xl px-4">
+        <Card className="rounded-3xl bg-[#23263A] border border-white/20 shadow-2xl w-full p-0">
+          <CardHeader className="px-10 pt-10 pb-4 border-b border-white/10">
+            <CardTitle className="text-4xl font-extrabold text-neutral-100 tracking-tight flex items-center gap-3">
+              <User className="w-8 h-8 text-[#4F46E5]" />
+              Preferences
+            </CardTitle>
+            <p className="text-lg text-neutral-300 mt-2 font-medium">Personalize your book experience. Select your favorite genres, moods, and more to get tailored recommendations.</p>
           </CardHeader>
-          <CardContent className="space-y-10 px-2 pb-8">
-            {/* Mood */}
-            <div>
-              <div className="text-base text-neutral-400 mb-2">Mood</div>
-              <div className="flex flex-wrap gap-3">
-                {moods.map((mood) => (
-                  <button
-                    key={mood}
-                    className={`px-4 py-2 rounded-lg text-base font-medium border transition-colors ${selectedMood === mood ? 'bg-[#a020f0] text-white border-[#c04cfb]' : 'bg-white/10 text-neutral-200 border-white/20 hover:bg-white/20'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    onClick={() => !loading && setSelectedMood(mood)}
-                    disabled={loading}
-                  >
-                    {mood}
-                  </button>
-                ))}
+          <CardContent className="px-10 py-8 space-y-10">
+            {/* Mood & Genres */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+              <div>
+                <div className="text-2xl font-extrabold text-white mb-2 flex items-center gap-2"><span>Mood</span></div>
+                <div className="flex flex-wrap gap-3">
+                  {moods.map((mood) => (
+                    <button
+                      key={mood}
+                      className={`px-4 py-2 rounded-full text-base font-medium border transition-colors ${selectedMood === mood ? 'bg-gradient-to-r from-[#4F46E5] via-[#60A5FA] to-[#3B82F6] text-white border-[#60A5FA] shadow' : 'bg-white/10 text-neutral-200 border-white/20 hover:bg-white/20'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      onClick={() => !loading && setSelectedMood(mood)}
+                      disabled={loading}
+                    >
+                      {mood}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className="text-2xl font-extrabold text-white mb-2 flex items-center gap-2"><span>Favorite Genres</span></div>
+                <div className="flex flex-wrap gap-3">
+                  {genres.map((genre) => (
+                    <button
+                      key={genre}
+                      className={`px-4 py-2 rounded-full text-base font-medium border transition-colors ${selectedGenres.includes(genre) ? 'bg-gradient-to-r from-[#4F46E5] via-[#60A5FA] to-[#3B82F6] text-white border-[#60A5FA] shadow' : 'bg-white/10 text-neutral-200 border-white/20 hover:bg-white/20'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      onClick={() => !loading && toggleGenre(genre)}
+                      disabled={loading}
+                    >
+                      {genre}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-            {/* Genres */}
-            <div>
-              <div className="text-base text-neutral-400 mb-2">Favorite Genres</div>
-              <div className="flex flex-wrap gap-3">
-                {genres.map((genre) => (
-                  <button
-                    key={genre}
-                    className={`px-4 py-2 rounded-lg text-base font-medium border transition-colors ${selectedGenres.includes(genre) ? 'bg-[#a020f0] text-white border-[#c04cfb]' : 'bg-white/10 text-neutral-200 border-white/20 hover:bg-white/20'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    onClick={() => !loading && toggleGenre(genre)}
-                    disabled={loading}
-                  >
-                    {genre}
-                  </button>
-                ))}
+            {/* Reading Level & Book Length */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+              <div>
+                <div className="text-2xl font-extrabold text-white mb-2 flex items-center gap-2"><span>Reading Level</span></div>
+                <div className="flex gap-3 flex-wrap">
+                  {readingLevels.map((level) => (
+                    <button
+                      key={level}
+                      className={`px-4 py-2 rounded-full text-base font-medium border transition-colors ${selectedLevel === level ? 'bg-gradient-to-r from-[#4F46E5] via-[#60A5FA] to-[#3B82F6] text-white border-[#60A5FA] shadow' : 'bg-white/10 text-neutral-200 border-white/20 hover:bg-white/20'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      onClick={() => !loading && setSelectedLevel(level)}
+                      disabled={loading}
+                    >
+                      {level}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className="text-2xl font-extrabold text-white mb-2 flex items-center gap-2"><span>Preferred Book Length</span></div>
+                <div className="flex gap-3 flex-wrap">
+                  {bookLengths.map((length) => (
+                    <button
+                      key={length}
+                      className={`px-4 py-2 rounded-full text-base font-medium border transition-colors ${selectedLength === length ? 'bg-gradient-to-r from-[#4F46E5] via-[#60A5FA] to-[#3B82F6] text-white border-[#60A5FA] shadow' : 'bg-white/10 text-neutral-200 border-white/20 hover:bg-white/20'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      onClick={() => !loading && setSelectedLength(length)}
+                      disabled={loading}
+                    >
+                      {length}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-            {/* Reading Level */}
-            <div>
-              <div className="text-base text-neutral-400 mb-2">Reading Level</div>
-              <div className="flex gap-3">
-                {readingLevels.map((level) => (
-                  <button
-                    key={level}
-                    className={`px-4 py-2 rounded-lg text-base font-medium border transition-colors ${selectedLevel === level ? 'bg-[#a020f0] text-white border-[#c04cfb]' : 'bg-white/10 text-neutral-200 border-white/20 hover:bg-white/20'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    onClick={() => !loading && setSelectedLevel(level)}
-                    disabled={loading}
-                  >
-                    {level}
-                  </button>
-                ))}
+            {/* Language & Format */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+              <div>
+                <div className="text-2xl font-extrabold text-white mb-2 flex items-center gap-2"><span>Preferred Language</span></div>
+                <div className="flex gap-3 flex-wrap">
+                  {languages.map((lang) => (
+                    <button
+                      key={lang}
+                      className={`px-4 py-2 rounded-full text-base font-medium border transition-colors ${selectedLanguage === lang ? 'bg-gradient-to-r from-[#4F46E5] via-[#60A5FA] to-[#3B82F6] text-white border-[#60A5FA] shadow' : 'bg-white/10 text-neutral-200 border-white/20 hover:bg-white/20'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      onClick={() => !loading && setSelectedLanguage(lang)}
+                      disabled={loading}
+                    >
+                      {lang}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-            {/* Book Length */}
-            <div>
-              <div className="text-base text-neutral-400 mb-2">Preferred Book Length</div>
-              <div className="flex gap-3 flex-wrap">
-                {bookLengths.map((length) => (
-                  <button
-                    key={length}
-                    className={`px-4 py-2 rounded-lg text-base font-medium border transition-colors ${selectedLength === length ? 'bg-[#a020f0] text-white border-[#c04cfb]' : 'bg-white/10 text-neutral-200 border-white/20 hover:bg-white/20'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    onClick={() => !loading && setSelectedLength(length)}
-                    disabled={loading}
-                  >
-                    {length}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {/* Language */}
-            <div>
-              <div className="text-base text-neutral-400 mb-2">Preferred Language</div>
-              <div className="flex gap-3 flex-wrap">
-                {languages.map((lang) => (
-                  <button
-                    key={lang}
-                    className={`px-4 py-2 rounded-lg text-base font-medium border transition-colors ${selectedLanguage === lang ? 'bg-[#a020f0] text-white border-[#c04cfb]' : 'bg-white/10 text-neutral-200 border-white/20 hover:bg-white/20'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    onClick={() => !loading && setSelectedLanguage(lang)}
-                    disabled={loading}
-                  >
-                    {lang}
-                  </button>
-                ))}
+              <div>
+                <div className="text-2xl font-extrabold text-white mb-2 flex items-center gap-2"><span>Preferred Book Format</span></div>
+                <div className="flex gap-3 flex-wrap">
+                  {formats.map((f) => (
+                    <button
+                      key={f.label}
+                      className={`px-4 py-2 rounded-full text-base font-medium border flex items-center transition-colors ${selectedFormats.includes(f.label) ? 'bg-gradient-to-r from-[#4F46E5] via-[#60A5FA] to-[#3B82F6] text-white border-[#60A5FA] shadow' : 'bg-white/10 text-neutral-200 border-white/20 hover:bg-white/20'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      onClick={() => !loading && toggleFormat(f.label)}
+                      disabled={loading}
+                    >
+                      {f.icon}{f.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
             {/* Favorite Authors */}
-            <div>
-              <div className="text-base text-neutral-400 mb-2 flex items-center gap-2"><User className="inline w-5 h-5 mr-2" />Favorite Authors</div>
+            <div className="pt-2">
+              <div className="text-2xl font-extrabold text-white mb-2 flex items-center gap-2"><User className="inline w-5 h-5 mr-2 text-white" />Favorite Authors <span className="text-xs text-neutral-400 ml-2 font-normal">(comma separated)</span></div>
               <input
                 type="text"
                 value={favoriteAuthors}
                 onChange={e => setFavoriteAuthors(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-neutral-400 text-base"
+                className="w-full px-4 py-3 rounded-full bg-white/10 border border-white/20 text-white placeholder:text-neutral-400 text-base"
                 placeholder="e.g. J.K. Rowling, Stephen King"
                 disabled={loading}
               />
             </div>
-            {/* Book Format */}
-            <div>
-              <div className="text-base text-neutral-400 mb-2">Preferred Book Format</div>
-              <div className="flex gap-3 flex-wrap">
-                {formats.map((f) => (
-                  <button
-                    key={f.label}
-                    className={`px-4 py-2 rounded-lg text-base font-medium border flex items-center transition-colors ${selectedFormats.includes(f.label) ? 'bg-[#a020f0] text-white border-[#c04cfb]' : 'bg-white/10 text-neutral-200 border-white/20 hover:bg-white/20'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    onClick={() => !loading && toggleFormat(f.label)}
-                    disabled={loading}
-                  >
-                    {f.icon}{f.label}
-                  </button>
-                ))}
-              </div>
-            </div>
             {/* Save Button */}
-            <div className="pt-4 flex justify-end">
+            <div className="pt-6 flex justify-end">
               <Button
                 onClick={savePreferences}
                 disabled={loading}
-                className="bg-[#a020f0] hover:bg-[#c04cfb] text-white rounded-xl px-8 py-3 text-lg font-bold shadow border border-white/20"
+                className="bg-gradient-to-r from-[#4F46E5] via-[#60A5FA] to-[#3B82F6] hover:from-[#60A5FA] hover:to-[#4F46E5] text-white rounded-full px-8 py-3 font-bold shadow transition-colors duration-200 border-0 focus:outline-none focus:ring-2 focus:ring-[#60A5FA] text-lg"
               >
-                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : saved ? "Saved!" : "Save Preferences"}
+                {loading ? <Loader2 className="h-5 w-5 animate-spin text-[#3B82F6]" /> : saved ? "Saved!" : "Save Preferences"}
               </Button>
             </div>
           </CardContent>

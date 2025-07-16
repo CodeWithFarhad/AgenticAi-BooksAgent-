@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { supabase } from "@/lib/supabaseClient"
 import { getRecommendedBooks } from "@/lib/googleBooks";
 import { useRouter } from "next/navigation";
+import Aurora from "./Aurora";
 
 interface Book {
   id: string
@@ -22,6 +23,7 @@ interface Book {
   rating?: number
   publishedYear?: number
   amazonLink?: string
+  buy_links?: string[]
 }
 
 function UserNav({ user }: { user: any }) {
@@ -54,7 +56,7 @@ function UserNav({ user }: { user: any }) {
   return (
     <div className="absolute top-6 right-8 z-40">
       <Link href="/signin">
-        <Button className="bg-[#a020f0] hover:bg-[#c04cfb] text-white font-bold px-7 py-3 rounded-2xl text-lg shadow-xl transition-colors">
+        <Button className="bg-gradient-to-r from-[#4F46E5] via-[#60A5FA] to-[#3B82F6] hover:from-[#60A5FA] hover:to-[#4F46E5] text-white font-bold px-4 py-1 rounded-full text-base shadow transition-colors duration-200 border-0 focus:outline-none focus:ring-2 focus:ring-[#60A5FA]">
           Get Started
         </Button>
       </Link>
@@ -165,9 +167,12 @@ export default function DiscoverPage() {
           const isbn10 = info.industryIdentifiers.find((id: any) => id.type === "ISBN_10");
           isbn = isbn13?.identifier || isbn10?.identifier || null;
         }
-        let amazonLink = isbn
-          ? `https://www.amazon.com/dp/${isbn}`
-          : `https://www.amazon.com/s?k=${encodeURIComponent(info.title)}`;
+        let titleForUrl = encodeURIComponent(info.title);
+        let buy_links = [
+          `https://www.amazon.com/s?k=${titleForUrl}`,
+          `https://www.goodreads.com/search?q=${titleForUrl}`,
+          `https://www.bookscape.co/search?q=${titleForUrl}`
+        ];
         return {
           id: item.id,
           title: info.title,
@@ -177,7 +182,7 @@ export default function DiscoverPage() {
           genre: (info.categories || []).join(", "),
           rating: info.averageRating,
           publishedYear: info.publishedDate,
-          amazonLink,
+          buy_links,
         }
       }) || [])
     } catch (error) {
@@ -285,20 +290,67 @@ export default function DiscoverPage() {
     return guestBooks.some(b => b.id === id);
   };
 
+  // Remove from history (user and guest)
+  const removeFromHistory = async (book: Book) => {
+    if (user) {
+      const session = supabase.auth.getSession ? (await supabase.auth.getSession()).data.session : null;
+      const token = session?.access_token;
+      try {
+        await fetch(`/api/history?id=${book.id}`, {
+          method: "DELETE",
+          headers: token ? { "Authorization": `Bearer ${token}` } : {},
+        });
+        setHistory((prev) => prev.filter((b) => b.id !== book.id));
+        toast({ title: "Removed from your list!", description: book.title });
+      } catch {
+        toast({ title: "Error", description: "Could not remove book from your list.", variant: "destructive" });
+      }
+    } else {
+      // Guest: remove from localStorage
+      const guestBooks = getGuestHistory();
+      setGuestHistory(guestBooks.filter((b) => b.id !== book.id));
+      setHistory((prev) => prev.filter((b) => b.id !== book.id));
+      toast({ title: "Removed from your preview list!", description: book.title });
+    }
+  };
+
   // Handler to go to chat page and trigger summary
   const goToSummary = (title: string) => {
     router.push(`/chat?summary=${encodeURIComponent(title)}`);
   };
 
   return (
-    <div className={`flex flex-col items-center justify-center w-full pt-1 pb-1 min-h-screen ${styles.animatedBg} sidebar-theme`}>
+    <div className="relative flex flex-col items-center justify-center w-full pt-1 pb-1 min-h-screen bg-gradient-to-br from-[#0B0D12] via-[#101014] to-[#181A20] overflow-hidden">
+      <div className="absolute inset-0 w-full h-full pointer-events-none opacity-80 z-0">
+        <Aurora colorStops={["#101432", "#1a237e", "#23263A"]} amplitude={0.7} blend={0.5} />
+      </div>
       <UserNav user={user} />
       {/* Stylish Logo */}
-      <h1 className="text-6xl md:text-8xl font-extrabold tracking-tight text-white drop-shadow-xl select-none font-sans mb-2" style={{letterSpacing: '0.06em', fontFamily: 'Montserrat, Inter, sans-serif'}}>
-        <span className="text-[#a020f0]">Book</span>Scape
+      <h1
+        className="text-6xl md:text-8xl font-extrabold tracking-tight text-white drop-shadow-xl select-none font-sans mb-2 logo-hover-animate"
+        style={{ letterSpacing: '0.06em', fontFamily: 'Montserrat, Inter, sans-serif' }}
+      >
+        <span className="text-[#111112]">Book</span>Genie
       </h1>
+      <style jsx global>{`
+        .logo-hover-animate {
+          position: relative;
+          display: inline-block;
+          background: linear-gradient(90deg, #fff 0%, #60A5FA 40%, #3B82F6 60%, #fff 100%);
+          background-size: 200% 100%;
+          background-clip: text;
+          -webkit-background-clip: text;
+          color: transparent;
+          -webkit-text-fill-color: transparent;
+          transition: background-position 0.5s cubic-bezier(.4,0,.2,1);
+        }
+        .logo-hover-animate:hover {
+          background-position: 100% 0;
+          transition: background-position 0.7s cubic-bezier(.4,0,.2,1);
+        }
+      `}</style>
       <p className="mt-2 text-xl md:text-2xl text-neutral-300 font-medium text-center max-w-2xl mb-3">
-        Discover books, get AI-powered recommendations, and explore details instantly
+        <span className="font-bold text-white glow-white">Discover books, get AI-powered recommendations, and explore details instantly</span>
       </p>
       {/* Search Bar */}
       <form
@@ -315,7 +367,7 @@ export default function DiscoverPage() {
           />
           <Button
             type="submit"
-            className="absolute right-3 top-1/2 -translate-y-1/2 bg-[#a020f0] hover:bg-[#c04cfb] text-white rounded-2xl px-6 py-2 text-lg font-bold shadow"
+            className="absolute right-3 top-1/2 -translate-y-1/2 bg-gradient-to-r from-[#4F46E5] via-[#60A5FA] to-[#3B82F6] hover:from-[#60A5FA] hover:to-[#4F46E5] text-white rounded-full px-4 py-1 text-base font-bold shadow transition-colors duration-200 border-0 focus:outline-none focus:ring-2 focus:ring-[#60A5FA]"
           >
             Search
           </Button>
@@ -324,68 +376,73 @@ export default function DiscoverPage() {
       {/* AI Recommendation Card (hide when searching) */}
       {searchQuery.trim() === "" && (
         <div className="w-full max-w-3xl mb-3">
-          <Card className="bg-white/5 border-white/20 rounded-2xl shadow-2xl p-8 backdrop-blur-xl flex flex-col items-center">
+          <Card className="bg-[#101014] border-white/20 rounded-2xl shadow-2xl p-8 backdrop-blur-xl flex flex-col items-center">
             <div className="flex items-center gap-3 mb-4">
-              <Sparkles className="h-7 w-7 text-[#a020f0]" />
+              <Sparkles className="h-7 w-7 text-[#4F46E5]" />
               <span className="text-2xl font-bold text-white">AI Recommendations</span>
             </div>
             <Button
               onClick={() => getRecommendedBooks().then(setRecommendedBooks)}
-              className="bg-[#a020f0] hover:bg-[#c04cfb] text-white rounded-xl px-6 py-2 text-lg font-bold shadow mb-4"
+              className="bg-gradient-to-r from-[#4F46E5] via-[#60A5FA] to-[#3B82F6] hover:from-[#60A5FA] hover:to-[#4F46E5] text-white rounded-full px-4 py-1 text-base font-bold shadow transition-colors duration-200 border-0 focus:outline-none focus:ring-2 focus:ring-[#60A5FA] mb-4"
             >
               Refresh Recommendations
             </Button>
             {recommendedBooks.length > 0 ? (
               <ul className="w-full space-y-4 mt-2">
-                {recommendedBooks.map((rec, idx) => (
-                  <li key={`${rec.id}-${idx}`} className="flex items-center gap-4 bg-white/10 rounded-xl p-4">
-                    <div className="w-14 h-20 bg-gradient-to-br from-[#a020f0] to-purple-600 rounded-lg flex items-center justify-center overflow-hidden">
-                      {rec.cover ? (
-                        <img src={rec.cover} alt={rec.title} className="w-full h-full object-cover rounded-lg" />
-                      ) : (
-                        <BookOpen className="h-7 w-7 text-white" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-lg font-bold text-white line-clamp-2">{rec.title}</div>
-                      <div className="text-[#A9A9B3] text-base">{rec.author}</div>
-                      {(() => {
-                        const displayRating = typeof rec.rating === 'number' && rec.rating > 0
-                          ? rec.rating
-                          : parseFloat((Math.random() * 1.5 + 3.5).toFixed(1));
-                        return (
-                          <div className="text-yellow-400 text-lg font-bold flex items-center mt-1">
-                            {displayRating > 0 ? "★".repeat(Math.round(displayRating)) : <span className="text-[#A9A9B3]">No rating</span>}
-                            <span className="ml-1 text-white text-base font-medium">{displayRating.toFixed(1)}</span>
-                          </div>
-                        );
-                      })()}
-                      {rec.description && <div className="text-sm text-neutral-300 mt-1 line-clamp-2">{rec.description}</div>}
-                    </div>
-                    <div className="flex flex-col gap-2 items-end">
-                      <Button
-                        onClick={() => addToHistory(rec)}
-                        disabled={isInHistory(rec.id)}
-                        className="bg-[#a020f0] hover:bg-[#c04cfb] text-white rounded-full px-4 py-2 text-sm font-bold"
-                      >
-                        {isInHistory(rec.id) ? "Added" : "Add to List"}
-                      </Button>
-                      <Button
-                        className="bg-[#a020f0] hover:bg-[#c04cfb] text-white rounded-full px-4 py-2 text-sm font-bold mt-1"
-                        onClick={() => goToSummary(rec.title)}
-                      >
-                        Summary
-                      </Button>
-                      {rec.amazonLink && (
-                        <a href={rec.amazonLink} target="_blank" rel="noopener noreferrer">
-                          <Button className="bg-[#a020f0] hover:bg-[#c04cfb] text-white rounded-full px-4 py-2 text-sm font-bold mt-1">
-                            Buy
-                          </Button>
-                        </a>
-                      )}
-                    </div>
-                  </li>
-                ))}
+                {recommendedBooks.map((rec, idx) => {
+                  // Find the first valid Amazon or Goodreads link
+                  const validBuyLink = (rec.buy_links || []).find(link =>
+                    link.includes('amazon.com') || link.includes('goodreads.com')
+                  );
+                  return (
+                    <li key={`${rec.id}-${idx}`} className="flex items-center gap-4 bg-[#111624] rounded-xl p-4 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:border-[#4F46E5] hover:border-2 group cursor-pointer">
+                      <div className="w-14 h-20 bg-gradient-to-br from-[#a020f0] to-purple-600 rounded-lg flex items-center justify-center overflow-hidden">
+                        {rec.cover ? (
+                          <img src={rec.cover} alt={rec.title} className="w-full h-full object-cover rounded-lg" />
+                        ) : (
+                          <BookOpen className="h-7 w-7 text-white" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-lg font-bold text-white line-clamp-2">{rec.title}</div>
+                        <div className="text-[#A9A9B3] text-base">{rec.author}</div>
+                        {(() => {
+                          const displayRating = typeof rec.rating === 'number' && rec.rating > 0
+                            ? rec.rating
+                            : parseFloat((Math.random() * 1.5 + 3.5).toFixed(1));
+                          return (
+                            <div className="text-yellow-400 text-lg font-bold flex items-center mt-1">
+                              {displayRating > 0 ? "★".repeat(Math.round(displayRating)) : <span className="text-[#A9A9B3]">No rating</span>}
+                              <span className="ml-1 text-white text-base font-medium">{displayRating.toFixed(1)}</span>
+                            </div>
+                          );
+                        })()}
+                        {rec.description && <div className="text-sm text-neutral-300 mt-1 line-clamp-2">{rec.description}</div>}
+                      </div>
+                      <div className="flex flex-row flex-wrap gap-2 items-center">
+                        <Button
+                          onClick={() => isInHistory(rec.id) ? removeFromHistory(rec) : addToHistory(rec)}
+                          className={`bg-gradient-to-r from-[#4F46E5] via-[#60A5FA] to-[#3B82F6] hover:from-[#60A5FA] hover:to-[#4F46E5] text-white rounded-full px-4 py-2 text-sm font-bold min-w-[110px] shadow transition-colors duration-200 border-0 focus:outline-none focus:ring-2 focus:ring-[#60A5FA] ${isInHistory(rec.id) ? 'opacity-80' : ''}`}
+                        >
+                          {isInHistory(rec.id) ? "Added" : "Add to List"}
+                        </Button>
+                        <Button
+                          className="bg-gradient-to-r from-[#FDE68A] via-[#F59E42] to-[#FBBF24] hover:from-[#F59E42] hover:to-[#FDE68A] text-white rounded-full px-4 py-2 text-sm font-bold min-w-[110px] shadow transition-colors duration-200 border-0 focus:outline-none focus:ring-2 focus:ring-[#F59E42]"
+                          onClick={() => goToSummary(rec.title)}
+                        >
+                          Summary
+                        </Button>
+                        {validBuyLink && (
+                          <a href={validBuyLink} target="_blank" rel="noopener noreferrer">
+                            <Button className="bg-gradient-to-r from-[#F87171] via-[#EF4444] to-[#B91C1C] hover:from-[#EF4444] hover:to-[#F87171] text-white rounded-full px-4 py-2 text-sm font-bold min-w-[80px] shadow transition-colors duration-200 border-0 focus:outline-none focus:ring-2 focus:ring-[#EF4444]">
+                              Buy
+                            </Button>
+                          </a>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             ) : (
               <div className="text-neutral-400 text-center mt-4">No recommendations found.</div>
@@ -394,18 +451,18 @@ export default function DiscoverPage() {
         </div>
       )}
       {/* Book Results Grid */}
-      <div className="w-full max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-4">
+      <div className="w-full max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-8 mt-4">
         {isLoading && (
           <div className="col-span-full flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-[#a020f0]" />
+            <Loader2 className="h-8 w-8 animate-spin text-[#3B82F6]" />
             <span className="ml-2 text-[#A9A9B3]">Searching books...</span>
           </div>
         )}
         {books.map((book) => (
-          <Card key={`${book.id}-${book.author || ''}-${book.title || ''}`} className="bg-white/5 border-white/20 hover:bg-white/10 transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl rounded-2xl group cursor-pointer">
+          <Card key={`${book.id}-${book.author || ''}-${book.title || ''}`} className="bg-[#111624] border-white/20 transition-all duration-300 rounded-2xl group cursor-pointer hover:scale-105 hover:shadow-2xl hover:border-[#4F46E5] hover:border-2">
             <CardHeader className="pb-3">
               <div className="flex items-start gap-3">
-                <div className="w-20 h-28 bg-gradient-to-br from-[#a020f0] to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                <div className="w-20 h-28 bg-gradient-to-br from-[#23263A] to-[#111624] rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden transition-all group-hover:ring-4 group-hover:ring-[#4F46E5]">
                   {book.cover ? (
                     <img src={book.cover} alt={book.title} className="w-full h-full object-cover rounded-lg" />
                   ) : (
@@ -413,7 +470,7 @@ export default function DiscoverPage() {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <CardTitle className="text-xl font-bold text-white line-clamp-2 group-hover:text-[#a020f0] transition-colors">
+                  <CardTitle className="text-xl font-bold text-white line-clamp-2 group-hover:text-[#4F46E5] transition-colors">
                     {book.title}
                   </CardTitle>
                   <p className="text-[#A9A9B3] text-base mt-1">{book.author}</p>
@@ -435,23 +492,28 @@ export default function DiscoverPage() {
                       {book.genre}
                     </span>
                   )}
-                  <div className="flex flex-row gap-2 mt-2">
+                  <div className="flex flex-row flex-wrap gap-2 mt-2 items-center">
                     <Button
-                      onClick={() => addToHistory(book)}
-                      disabled={isInHistory(book.id)}
-                      className="bg-[#a020f0] hover:bg-[#c04cfb] text-white rounded-full px-4 py-2 text-sm font-bold"
+                      onClick={() => isInHistory(book.id) ? removeFromHistory(book) : addToHistory(book)}
+                      className={`bg-gradient-to-r from-[#4F46E5] via-[#60A5FA] to-[#3B82F6] hover:from-[#60A5FA] hover:to-[#4F46E5] text-white rounded-full px-4 py-2 text-sm font-bold min-w-[110px] shadow transition-colors duration-200 border-0 focus:outline-none focus:ring-2 focus:ring-[#60A5FA] ${isInHistory(book.id) ? 'opacity-80' : ''}`}
                     >
                       {isInHistory(book.id) ? "Added" : "Add to List"}
                     </Button>
-                    {book.amazonLink && (
+                    {(book.buy_links && book.buy_links[0]) ? (
+                      <a href={book.buy_links[0]} target="_blank" rel="noopener noreferrer">
+                        <Button className="bg-gradient-to-r from-[#F87171] via-[#EF4444] to-[#B91C1C] hover:from-[#EF4444] hover:to-[#F87171] text-white rounded-full px-4 py-2 text-sm font-bold min-w-[80px] shadow transition-colors duration-200 border-0 focus:outline-none focus:ring-2 focus:ring-[#EF4444]">
+                          Buy
+                        </Button>
+                      </a>
+                    ) : book.amazonLink && (
                       <a href={book.amazonLink} target="_blank" rel="noopener noreferrer">
-                        <Button className="bg-[#a020f0] hover:bg-[#c04cfb] text-white rounded-full px-4 py-2 text-sm font-bold">
+                        <Button className="bg-gradient-to-r from-[#F87171] via-[#EF4444] to-[#B91C1C] hover:from-[#EF4444] hover:to-[#F87171] text-white rounded-full px-4 py-2 text-sm font-bold min-w-[80px] shadow transition-colors duration-200 border-0 focus:outline-none focus:ring-2 focus:ring-[#EF4444]">
                           Buy
                         </Button>
                       </a>
                     )}
                     <Button
-                      className="bg-[#a020f0] hover:bg-[#c04cfb] text-white rounded-full px-4 py-2 text-sm font-bold"
+                      className="bg-gradient-to-r from-[#FDE68A] via-[#F59E42] to-[#FBBF24] hover:from-[#F59E42] hover:to-[#FDE68A] text-white rounded-full px-4 py-2 text-sm font-bold min-w-[110px] shadow transition-colors duration-200 border-0 focus:outline-none focus:ring-2 focus:ring-[#F59E42]"
                       onClick={() => goToSummary(book.title)}
                     >
                       Summary

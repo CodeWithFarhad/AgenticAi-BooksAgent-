@@ -117,6 +117,10 @@ export default function HistoryPage() {
     }
     setAdding(true);
     setAddError("");
+    // Optimistically update UI
+    const optimisticBook = { ...newBook, id: newBook.title + newBook.author, status: status as Book["status"] };
+    setBooks(prev => [...prev, optimisticBook]);
+    setNewBook({ title: "", author: "", status: "want" });
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
@@ -127,9 +131,9 @@ export default function HistoryPage() {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
-          book_id: newBook.title + newBook.author, // fallback unique id
-          title: newBook.title,
-          author: newBook.author,
+          book_id: optimisticBook.id, // fallback unique id
+          title: optimisticBook.title,
+          author: optimisticBook.author,
           cover: "",
           status,
         }),
@@ -138,14 +142,16 @@ export default function HistoryPage() {
         const err = await res.json();
         setAddError(err.detail || "Failed to add book");
         toast({ title: "Error", description: err.detail || "Failed to add book", variant: "destructive" });
+        // Revert optimistic update
+        setBooks(prev => prev.filter(b => b.id !== optimisticBook.id));
         throw new Error(err.detail);
       }
-      setNewBook({ title: "", author: "", status: "want" });
-      toast({ title: "Added to your list!", description: newBook.title });
-      fetchBooks();
+      toast({ title: "Added to your list!", description: optimisticBook.title });
     } catch (e) {
       setAddError("Could not add book. See console for details.");
       toast({ title: "Error", description: "Could not add book.", variant: "destructive" });
+      // Revert optimistic update
+      setBooks(prev => prev.filter(b => b.id !== optimisticBook.id));
     } finally {
       setAdding(false);
     }
@@ -159,6 +165,9 @@ export default function HistoryPage() {
       setBooks(guestBooks);
       return;
     }
+    // Optimistically update UI
+    const prevBooks = books;
+    setBooks(books.filter(b => b.id !== id));
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
@@ -166,11 +175,14 @@ export default function HistoryPage() {
       if (!res.ok) {
         const err = await res.json();
         toast({ title: "Error", description: err.detail || "Failed to delete book", variant: "destructive" });
+        // Revert optimistic update
+        setBooks(prevBooks);
         throw new Error(err.detail);
       }
-      fetchBooks();
     } catch (e) {
       toast({ title: "Error", description: "Could not delete book.", variant: "destructive" });
+      // Revert optimistic update
+      setBooks(prevBooks);
     }
   }
 
@@ -183,6 +195,9 @@ export default function HistoryPage() {
       setBooks(guestBooks);
       return;
     }
+    // Optimistically update UI
+    const prevBooks = books;
+    setBooks(books.map(b => b.id === id ? { ...b, status } : b));
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
@@ -194,11 +209,14 @@ export default function HistoryPage() {
       if (!res.ok) {
         const err = await res.json();
         toast({ title: "Error", description: err.detail || "Failed to update book", variant: "destructive" });
+        // Revert optimistic update
+        setBooks(prevBooks);
         throw new Error(err.detail);
       }
-      fetchBooks();
     } catch (e) {
       toast({ title: "Error", description: "Could not update book.", variant: "destructive" });
+      // Revert optimistic update
+      setBooks(prevBooks);
     }
   }
 
@@ -210,27 +228,24 @@ export default function HistoryPage() {
   }
 
   return (
-    <div className={`min-h-screen w-full ${styles.animatedBg}`}>
+    <div className="min-h-screen w-full bg-[#101014]">
       <main className="flex-1 flex flex-col p-0 sm:p-8">
-        <div className="w-full flex flex-col items-center mt-4 mb-2">
-          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white drop-shadow-lg select-none font-sans" style={{letterSpacing: '0.04em'}}>
-            Reading <span className="text-[#a020f0]">History</span>
-          </h1>
-          <p className="mt-2 text-sm md:text-base text-neutral-300 font-normal text-center max-w-xl">
+        <div className="w-full flex flex-col items-center mt-4 mb-6">
+          <p className="text-lg md:text-xl text-neutral-300 font-normal text-center max-w-xl font-sans">
             Track your book journey. Move books between lists, mark as completed, or add new reads!
           </p>
         </div>
         {/* Stats */}
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mb-8 justify-center w-full">
-          <div className="bg-white/10 rounded-xl p-6 flex-1 text-center shadow-lg min-w-[120px]">
+          <div className="bg-[#23263A] rounded-xl p-6 flex-1 text-center shadow-lg min-w-[120px]">
             <div className="text-2xl font-bold font-sans text-white">{stats.want}</div>
             <div className="text-[#A9A9B3] font-medium">Want to Read</div>
           </div>
-          <div className="bg-white/10 rounded-xl p-6 flex-1 text-center shadow-lg min-w-[120px]">
+          <div className="bg-[#23263A] rounded-xl p-6 flex-1 text-center shadow-lg min-w-[120px]">
             <div className="text-2xl font-bold font-sans text-white">{stats.inprogress}</div>
             <div className="text-[#A9A9B3] font-medium">In Progress</div>
           </div>
-          <div className="bg-white/10 rounded-xl p-6 flex-1 text-center shadow-lg min-w-[120px]">
+          <div className="bg-[#23263A] rounded-xl p-6 flex-1 text-center shadow-lg min-w-[120px]">
             <div className="text-2xl font-bold font-sans text-white">{stats.completed}</div>
             <div className="text-[#A9A9B3] font-medium">Completed</div>
           </div>
@@ -254,9 +269,9 @@ export default function HistoryPage() {
           {/* Modern dropdown for status */}
           <Menu as="div" className="relative inline-block text-left w-full sm:w-auto">
             <div>
-              <Menu.Button className="inline-flex justify-between items-center w-full sm:w-40 px-4 py-2 rounded-full bg-white/10 border border-white/10 text-white font-sans focus:outline-none focus:ring-2 focus:ring-[#a020f0]">
+              <Menu.Button className="inline-flex justify-between items-center w-full sm:w-40 px-4 py-2 rounded-full bg-white/10 border border-white/10 text-white font-sans focus:outline-none focus:ring-2 focus:ring-[#4F46E5]">
                 {statusLabels[newBook.status as keyof typeof statusLabels]}
-                <ChevronDown className="ml-2 h-4 w-4 text-[#a020f0]" />
+                <ChevronDown className="ml-2 h-4 w-4 text-[#4F46E5]" />
               </Menu.Button>
             </div>
             <Transition as={Fragment} enter="transition ease-out duration-100" enterFrom="transform opacity-0 scale-95" enterTo="transform opacity-100 scale-100" leave="transition ease-in duration-75" leaveFrom="transform opacity-100 scale-100" leaveTo="transform opacity-0 scale-95">
@@ -266,7 +281,7 @@ export default function HistoryPage() {
                     {({ active }) => (
                       <button
                         type="button"
-                        className={`${active ? 'bg-[#a020f0]/20 text-[#a020f0]' : 'text-white'} group flex w-full items-center rounded-xl px-4 py-2 text-sm font-sans transition-colors`}
+                        className={`${active ? 'bg-[#4F46E5]/20 text-[#4F46E5]' : 'text-white'} group flex w-full items-center rounded-xl px-4 py-2 text-sm font-sans transition-colors`}
                         onClick={() => setNewBook({ ...newBook, status: value })}
                       >
                         {label}
@@ -277,7 +292,7 @@ export default function HistoryPage() {
               </Menu.Items>
             </Transition>
           </Menu>
-          <Button onClick={addBook} disabled={adding || !newBook.title || !newBook.author} className="bg-[#a020f0] hover:bg-[#c04cfb] text-white rounded-full px-6 py-2 flex items-center gap-2 font-sans w-full sm:w-auto">
+          <Button onClick={addBook} disabled={adding || !newBook.title || !newBook.author} className="bg-gradient-to-r from-[#4F46E5] via-[#60A5FA] to-[#3B82F6] hover:from-[#60A5FA] hover:to-[#4F46E5] text-white rounded-full px-6 py-2 flex items-center gap-2 font-sans w-full sm:w-auto font-bold shadow transition-colors duration-200 border-0 focus:outline-none focus:ring-2 focus:ring-[#60A5FA]">
             {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
             Add
           </Button>
@@ -289,11 +304,11 @@ export default function HistoryPage() {
             <div key={status} className="bg-transparent rounded-2xl p-0">
               <h2 className="text-xl font-bold mb-4 text-white font-sans text-center">{statusLabels[status]}</h2>
               {loading ? (
-                <div className="flex items-center justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-[#a020f0]" /></div>
+                <div className="flex items-center justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-[#3B82F6]" /></div>
               ) : (
                 <ul className="space-y-4">
                   {books.filter((b) => b.status === status && validStatuses.includes(b.status)).map((book) => (
-                    <li key={book.id} className="flex items-center gap-4 bg-white/10 rounded-2xl px-6 py-4 shadow-lg font-sans">
+                    <li key={book.id} className="flex items-center gap-4 bg-[#23263A] rounded-2xl px-6 py-4 shadow-lg font-sans">
                       <div className="w-12 h-16 bg-gradient-to-br from-[#a020f0] to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
                         {book.cover ? (
                           <img src={book.cover} alt={book.title} className="w-full h-full object-cover rounded-lg" />
@@ -308,8 +323,8 @@ export default function HistoryPage() {
                       <div className="flex gap-2">
                         {/* Replace the three status move buttons with a dropdown menu */}
                         <Menu as="div" className="relative inline-block text-left">
-                          <Menu.Button className="bg-transparent hover:bg-white/20 text-white rounded-full px-3 py-1 flex items-center gap-1 border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#a020f0]">
-                            Move <ChevronDown className="ml-1 h-4 w-4 text-[#a020f0]" />
+                          <Menu.Button className="bg-transparent hover:bg-gradient-to-r hover:from-[#4F46E5]/20 hover:via-[#60A5FA]/20 hover:to-[#3B82F6]/20 text-white rounded-full px-3 py-1 flex items-center gap-1 border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#60A5FA] font-bold">
+                            Move <ChevronDown className="ml-1 h-4 w-4 text-[#4F46E5]" />
                           </Menu.Button>
                           <Transition as={Fragment} enter="transition ease-out duration-100" enterFrom="transform opacity-0 scale-95" enterTo="transform opacity-100 scale-100" leave="transition ease-in duration-75" leaveFrom="transform opacity-100 scale-100" leaveTo="transform opacity-0 scale-95">
                             <Menu.Items className="absolute right-0 z-10 mt-2 w-36 origin-top-right rounded-xl bg-[#23272f] shadow-lg ring-1 ring-black/10 focus:outline-none">
@@ -318,7 +333,7 @@ export default function HistoryPage() {
                                   {({ active }) => (
                                     <button
                                       type="button"
-                                      className={`${active ? 'bg-[#a020f0]/20 text-[#a020f0]' : 'text-white'} group flex w-full items-center rounded-xl px-4 py-2 text-sm font-sans transition-colors`}
+                                      className={`${active ? 'bg-[#4F46E5]/20 text-[#4F46E5]' : 'text-white'} group flex w-full items-center rounded-xl px-4 py-2 text-sm font-sans transition-colors`}
                                       onClick={() => moveBook(book.id, value as Book["status"])}
                                     >
                                       {label}

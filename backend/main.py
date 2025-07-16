@@ -1,11 +1,11 @@
 # main.py
 
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
-from agent import run_books_agent, run_summary_agent
+from agent import run_book_agent_orchestrator
 
 load_dotenv()
 
@@ -28,7 +28,7 @@ class AgentRequest(BaseModel):
     query: str = None
 
 @app.post("/agent")
-async def agent_endpoint(req: AgentRequest):
+async def agent_endpoint(req: AgentRequest, request: Request):
     if req.query:
         user_message = req.query
     elif req.mode == "summary" and req.book:
@@ -38,9 +38,5 @@ async def agent_endpoint(req: AgentRequest):
     else:
         return {"error": "Invalid request"}
 
-    if req.mode == "summary":
-        result = await run_summary_agent(user_message)
-    else:
-        result = await run_books_agent(user_message)
-
+    result = await run_book_agent_orchestrator(user_message, request, user_id=req.user_id)
     return {"reply": result["final_output"]}

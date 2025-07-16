@@ -5,12 +5,11 @@ from agents import function_tool
 @function_tool
 def get_book_summary(book_title: str) -> dict:
     """
-    (Optional Tool) Returns a dummy summary and moral for fallback or testing.
-    Can be expanded to call external APIs if needed.
+    This is a fallback/dummy summary tool. Can be expanded to call external LLMs or APIs.
+    Returns a structured summary + moral for testing and non-production fallback.
     """
-    # Static return for now; real logic could be added
     return {
         "title": book_title,
-        "summary": f"This is a sample summary of the book '{book_title}'. It discusses the themes, characters, and key messages.",
-        "moral": "Stay strong through adversity and value personal growth."
+        "summary": f"The story of '{book_title}' explores deep emotional and psychological journeys through its main character(s), with layered themes of growth, conflict, and transformation.",
+        "moral": "Resilience and empathy can overcome even the most challenging circumstances."
     }

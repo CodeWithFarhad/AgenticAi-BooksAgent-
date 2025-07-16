@@ -41,7 +41,7 @@ export default function SignInPage() {
   };
 
   return (
-    <div className={`flex flex-col items-center justify-center min-h-screen w-full ${styles.animatedBg}`}>
+    <div className="flex flex-col items-center justify-center min-h-screen w-full bg-[#181A20]">
       <AuthCard
         title="Sign In"
         description="Welcome back! Please enter your credentials to access your account."

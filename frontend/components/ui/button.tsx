@@ -8,7 +8,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     <button
       ref={ref}
       className={cn(
-        "inline-flex items-center justify-center rounded-md px-4 py-2 text-white font-bold text-lg transition-colors",
+        "inline-flex items-center justify-center rounded-full px-6 py-2 text-white font-bold text-lg bg-[#4F46E5] hover:bg-[#6366F1] focus:outline-none focus:ring-2 focus:ring-[#6366F1] shadow transition-colors duration-200",
         className
       )}
       {...props}
@@ -22,7 +22,7 @@ export function GoogleButton({ children = "Continue with Google", className = ""
   return (
     <button
       className={cn(
-        "flex items-center justify-center gap-3 w-full bg-white text-neutral-900 font-semibold border border-neutral-300 rounded-2xl px-4 py-3 text-lg shadow transition hover:bg-neutral-100 active:bg-neutral-200 focus:outline-none focus:ring-2 focus:ring-[#a020f0]",
+        "flex items-center justify-center gap-3 w-full bg-white text-neutral-900 font-semibold border border-[#4F46E5] rounded-full px-4 py-3 text-lg shadow transition hover:bg-[#EEF2FF] active:bg-[#E0E7FF] focus:outline-none focus:ring-2 focus:ring-[#6366F1]",
         className
       )}
       {...props}
